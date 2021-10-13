@@ -14,7 +14,7 @@ namespace Company.Function
 {
     public static class GetRating
     {
-        [FunctionName("getRating")]
+        [FunctionName("GetRating")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(
                 AuthorizationLevel.Function, "get", "post", 
