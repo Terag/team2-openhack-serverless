@@ -23,10 +23,13 @@ namespace Company.Function
                 databaseName: "%CosmosDb.Database%",
                 collectionName: "%CosmosDb.Collection%",
                 ConnectionStringSetting = "CosmosDb.ConnectionString",
-                SqlQuery = "select * from ratings r where r.id = {ratingId}")] IAsyncCollector<dynamic> documentOut,
+                Id = "{ratingId}",
+                PartitionKey = "Id"
+                )] IAsyncCollector<dynamic> documentOut,
             ILogger log)
         {
-            return documentOut != null ? new NotFoundObjectResult($@"No rating found'") : (IActionResult)new OkObjectResult(documentOut);
+            
+            return documentOut != null ? (IActionResult)new OkObjectResult(documentOut) : new NotFoundObjectResult($@"No rating found");
         }
 
     }
