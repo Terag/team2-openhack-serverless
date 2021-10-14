@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace AggregateOrderElements
 {
@@ -35,9 +37,13 @@ namespace AggregateOrderElements
             return "";
         }
 
-        public static void Store()
+        public static async Task Store(string orderId, dynamic orderContent)
         {
-            //TO DO
+            CosmosClient client = new CosmosClient("AccountEndpoint=https://icecreamrating-cosmos.documents.azure.com:443/;AccountKey=1TRq4McjHzssbHkYJ4lwkwwNoEjpQY6zkcEX3xGC2NN7wHCqvomiHyhgMGX27s4Npzz7a48qUUoqQuUFXMsbfw==;");
+
+            Container container = client.GetContainer("bfyoc - team2", "orders");
+            
+            ItemResponse<dynamic> orderResponse = await container.CreateItemAsync(orderContent, new PartitionKey(orderId));
         }
 
         public static void CombineOrder()
