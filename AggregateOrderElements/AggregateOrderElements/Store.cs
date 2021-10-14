@@ -19,9 +19,13 @@ namespace AggregateOrderElements
                 collectionName: "%CosmosDb.Collection%",
                 ConnectionStringSetting = "CosmosDb.ConnectionString")] IAsyncCollector<dynamic> documentsOut)
         {
-            dynamic order = JObject.Parse(orderCombined);
+            JArray orders = JArray.Parse(orderCombined);
 
-            await documentsOut.AddAsync(order);
+            foreach(JObject order in orders)
+            {
+                await documentsOut.AddAsync(order);
+            }
+
         }
     }
 }

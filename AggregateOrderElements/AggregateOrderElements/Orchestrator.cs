@@ -37,7 +37,10 @@ namespace AggregateOrderElements
                 // Call Combine
                 string orderCombined = await context.CallActivityAsync<string>("Combine", input.OrderId);
                 // Call Store
-                await context.CallActivityAsync<string>("Store", orderCombined);
+                if(!string.IsNullOrWhiteSpace(orderCombined))
+                {
+                    await context.CallActivityAsync<string>("Store", orderCombined);
+                }
             }
 
             return 0;

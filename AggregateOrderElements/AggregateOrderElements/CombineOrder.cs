@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using CsvHelper;
 using Microsoft.Azure.Storage;
@@ -18,28 +20,46 @@ namespace AggregateOrderElements
         {
             //public static async Task<int
             string orderId = context.GetInput<string>();
+            string orderHeaderFileUri = "https://bfyocstorageaccount.blob.core.windows.net/orders/" + orderId + "-OrderHeaderDetails.csv";
+            string orderLinesFileUri = "https://bfyocstorageaccount.blob.core.windows.net/orders/" + orderId + "-OrderLineItems.csv";
+            string orderInformationFileUri = "https://bfyocstorageaccount.blob.core.windows.net/orders/" + orderId + "-ProductInformation.csv";
 
-            var storageAccountConnetionString = "DefaultEndpointsProtocol=https;AccountName=bfyocstorageaccount;AccountKey=3TaClxdiwSGsxQs46GFSNMS92jEtvBAxzfnWuhWWfxjFva5TYdLlhGsXLCNkHOnyreyoEOMFWHfdz7FqW52cDA==;EndpointSuffix=core.windows.net";
-            var account = CloudStorageAccount.Parse(storageAccountConnetionString);
+            String strRequestUrl = "https://serverlessohmanagementapi.trafficmanager.net/api/order/combineOrderContent";
 
-            var cloudBlobClient = account.CreateCloudBlobClient();
-            var container  = cloudBlobClient.GetContainerReference("orders");
+            bool ret = false;
 
+            HttpClient client = new HttpClient();
 
-            using (var orderHeader = await container.GetBlobReferenceFromServerAsync($"{orderId}-OrderHeaderDetails.csv").GetCsvReader())
+            HttpRequestMessage myRequest = new HttpRequestMessage
             {
-                
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(strRequestUrl),
+                Headers = {
+                },
+                Content = new StringContent("{" +
+                    $"\"orderHeaderDetailsCSVUrl\": \"{orderHeaderFileUri}\"," +
+                    $"\"orderLineItemsCSVUrl\": \"{orderLinesFileUri}\"," +
+                    $"\"productInformationCSVUrl\": \"{orderInformationFileUri}\"" +
+                "}", Encoding.UTF8, "application/json")
+            };
+
+            HttpResponseMessage res = null;
+
+            var t = Task.Run(async () =>
+            {
+                res = await client.SendAsync(myRequest);
+            });
+            t.Wait();
+
+            if(res.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return await res.Content.ReadAsStringAsync();
             }
-            return "wip";
+            else
+            {
+                return "";
+            }
+
         }
-
-        public static async Task<CsvReader> GetCsvReader(this Task<ICloudBlob> cloudBlob)
-        {
-            Stream stream = await cloudBlob.Result.OpenReadAsync();
-            StreamReader streamReader = new StreamReader(stream);
-
-            return new CsvReader(streamReader, System.Globalization.CultureInfo.InvariantCulture);
-        }
-
     }
 }
