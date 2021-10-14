@@ -9,21 +9,6 @@ using System.Threading.Tasks;
 
 namespace AggregateOrderElements
 {
-    public class FilesAggregationState
-    {
-        [JsonProperty("orderId")]
-        public string OrderId { get; set; } = "NEW";
-
-        [JsonProperty("orderHeaderDetailsAvailable")]
-        public bool OrderHeaderDetailsAvailable { get; set; } = false;
-
-        [JsonProperty("orderLineItems")]
-        public bool OrderLineItems { get; set; } = false;
-
-        [JsonProperty("productInformation ")]
-        public bool ProductInformation { get; set; } = false;
-    }
-
     public static class Function1
     {
         [FunctionName("Function1")]
