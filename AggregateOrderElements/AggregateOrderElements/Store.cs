@@ -12,18 +12,16 @@ namespace AggregateOrderElements
     class Store
     {
         [FunctionName("Store")]
-        public static async Task<int> Run(
+        public static async Task Run(
+            [ActivityTrigger] string orderCombined,
             [CosmosDB(
                 databaseName: "%CosmosDb.Database%",
                 collectionName: "%CosmosDb.Collection%",
-                ConnectionStringSetting = "CosmosDb.ConnectionString")] IAsyncCollector<dynamic> documentsOut,
-            string orderCombined)
+                ConnectionStringSetting = "CosmosDb.ConnectionString")] IAsyncCollector<dynamic> documentsOut)
         {
             dynamic order = JObject.Parse(orderCombined);
 
             await documentsOut.AddAsync(order);
-
-            return 0;
         }
     }
 }

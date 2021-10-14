@@ -10,17 +10,28 @@ using Newtonsoft.Json;
 
 namespace AggregateOrderElements
 {
+    public class OrchestratorInput
+    {
+        public string OrderId { get; set; }
+        public string File { get; set; }
+    }
+
     public static class NewFile
     {
         [FunctionName("NewFile")]
-        public static void Run([BlobTrigger("orders/{orderId}-{file}",
-            Connection = "DefaultEndpointsProtocol=https;AccountName=bfyocstorageaccount;AccountKey=3TaClxdiwSGsxQs46GFSNMS92jEtvBAxzfnWuhWWfxjFva5TYdLlhGsXLCNkHOnyreyoEOMFWHfdz7FqW52cDA==;EndpointSuffix=core.windows.net")]Stream myBlob,
+        public static async Task Run([BlobTrigger("orders/{orderId}-{file}.csv",
+            Connection = "Blob.ConnectionString")]Stream myBlob,
             string orderId,
             string file,
-            IDurableOrchestrationClient starter,
+            [DurableClient] IDurableOrchestrationClient starter,
             ILogger log)
         {
-            starter.StartNewAsync("Orchestrator", orderId, file);
+            var input = new OrchestratorInput
+            {
+                OrderId=orderId,
+                File=file
+            };
+            await starter.StartNewAsync("Orchestrator", orderId + "-" + file, input);
         }
 
         public static async Task Store(string orderId, dynamic orderContent)

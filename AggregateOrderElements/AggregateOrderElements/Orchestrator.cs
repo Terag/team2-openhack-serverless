@@ -8,22 +8,24 @@ namespace AggregateOrderElements
     {
 
         [FunctionName("Orchestrator")]
-        public static async Task<int> Run([OrchestrationTrigger] IDurableOrchestrationContext context, string entityKey, string fileType)
+        public static async Task<int> Run([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var entityId = new EntityId("FilesAggregationState", entityKey);
+            var input = context.GetInput<OrchestratorInput>();
+
+            var entityId = new EntityId(nameof(FilesAggregationState), input.OrderId);
 
             // One-way signal to the entity - does not await a response
-            if (fileType == "OrderHeaderDetails")
+            if (input.File == "OrderHeaderDetails")
             {
                 context.SignalEntity(entityId, "SetOrderHeaderDetailsAvailable");
             }
 
-            if (fileType == "OrderLineItems")
+            if (input.File == "OrderLineItems")
             {
                 context.SignalEntity(entityId, "SetOrderLineItemsAvailable");
             }
 
-            if (fileType == "ProductInformation")
+            if (input.File == "ProductInformation")
             {
                 context.SignalEntity(entityId, "SetProductInformationAvailable");
             }
@@ -33,9 +35,9 @@ namespace AggregateOrderElements
             if (state)
             {
                 // Call Combine
-                await context.CallActivityAsync<string>("Combine", entityKey);
+                string orderCombined = await context.CallActivityAsync<string>("Combine", input.OrderId);
                 // Call Store
-                await context.CallActivityAsync<string>("Store", entityKey);
+                await context.CallActivityAsync<string>("Store", orderCombined);
             }
 
             return 0;
